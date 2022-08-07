@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { ResponseManyDto } from 'src/shared/response.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -8,8 +10,13 @@ export class UsersService {
     return 'This action adds a new user';
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<ResponseManyDto<User>> {
+    return {
+      statusCode: 200,
+      message: [],
+      error: '',
+      data: [],
+    };
   }
 
   findOne(id: number) {
