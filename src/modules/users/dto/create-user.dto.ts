@@ -4,11 +4,13 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 import { permissionEnum } from 'src/shared/enum';
 
 export class CreateUserDto {
+  @IsOptional()
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty({
@@ -18,6 +20,7 @@ export class CreateUserDto {
   })
   readonly email?: string;
 
+  @IsOptional()
   @IsNotEmpty()
   @ApiProperty({
     example: '<your_password>',
@@ -25,6 +28,7 @@ export class CreateUserDto {
   })
   readonly password?: string;
 
+  @IsOptional()
   @IsEnum(permissionEnum)
   @ApiProperty({
     example: '<your_permission>',

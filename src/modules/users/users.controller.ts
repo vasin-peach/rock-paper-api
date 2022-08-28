@@ -15,6 +15,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiExtraModels,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -38,23 +39,21 @@ export class UsersController {
 
   @Post()
   @ApiOperation({ summary: 'Create user' })
-  @ApiCreatedResponse({
-    description: 'The record has been successfully created.',
-  })
+  @ApiResponseOne(User, ApiCreatedResponse)
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @ApiResponseMany(User)
   @ApiOperation({ summary: 'Get all user' })
+  @ApiResponseMany(User, ApiOkResponse)
   findAll(): Promise<ResponseManyDto<User>> {
     return this.usersService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
-  @ApiResponseOne(User)
+  @ApiResponseOne(User, ApiOkResponse)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }

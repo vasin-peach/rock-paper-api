@@ -1,22 +1,67 @@
-import { Injectable } from '@nestjs/common';
-import { ResponseManyDto } from 'src/shared/response.dto';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  MetaDto,
+  ResponseManyDto,
+  ResponseOneDto,
+} from 'src/shared/response.dto';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
+
+  create(createUserDto: CreateUserDto): ResponseOneDto<User> {
+    const data = this.usersRepository.create(createUserDto);
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: ['CREATE_USER_SUCCESS'],
+      data,
+    };
   }
 
-  async findAll(): Promise<ResponseManyDto<User>> {
+  async findAll(meta?: MetaDto): Promise<ResponseManyDto<User>> {
+    if (!meta)
+      return {
+        statusCode: HttpStatus.OK,
+        message: ['GET USERS SUCCESS'],
+        data: await this.usersRepository.find(),
+      };
+
+    const queryBuilder = this.usersRepository.createQueryBuilder('user');
+    queryBuilder.skip(meta.page * meta.offset).take(meta.offset); // build pagination builder
+
+    const [data, total] = await Promise.all([
+      queryBuilder.getMany(),
+      queryBuilder.getCount(),
+    ]);
+
     return {
-      statusCode: 200,
-      message: [],
-      error: '',
-      data: [],
+      statusCode: HttpStatus.OK,
+      message: ['GET_USER_SUCCESS', 'PAGINATION'],
+      data,
+      meta: {
+        ...meta,
+        total,
+      },
     };
+
+    // const data = queryBuilder.
+    // const data = meta
+    //   ? await queryBuilder.skip(meta.page * meta.offset).take(meta.offset)
+    //   : await this.usersRepository.find();
+    // return {
+    //   statusCode: 200,
+    //   message: [],
+    //   error: '',
+    //   data,
+    // };
   }
 
   findOne(id: number) {

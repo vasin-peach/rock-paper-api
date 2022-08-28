@@ -1,5 +1,30 @@
 import { applyDecorators, Type } from '@nestjs/common';
-import { ApiOkResponse, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiProperty,
+  ApiResponseOptions,
+  getSchemaPath,
+  PickType,
+} from '@nestjs/swagger';
+
+export class ResponseMetaDto {
+  @ApiProperty({ example: 100, minimum: 1 })
+  total: number;
+
+  @ApiProperty({ example: 1, minimum: 1 })
+  page: number;
+
+  @ApiProperty({ example: 10, minimum: 1, maximum: 100 })
+  offset: number;
+
+  @ApiProperty({ example: false })
+  hasPrevPage?: boolean;
+
+  @ApiProperty({ example: true })
+  hasNextPage?: boolean;
+}
+
+export class MetaDto extends PickType(ResponseMetaDto, ['page', 'offset']) {}
 
 export class ResponseManyDto<TData> {
   @ApiProperty({ example: 200 })
@@ -9,7 +34,10 @@ export class ResponseManyDto<TData> {
   message: string[];
 
   @ApiProperty({ nullable: true, example: '<error message>' })
-  error: string;
+  error?: string;
+
+  @ApiProperty({ nullable: true, type: ResponseMetaDto })
+  meta?: ResponseMetaDto;
 
   data: TData[];
 }
@@ -22,14 +50,19 @@ export class ResponseOneDto<TData> {
   message: string[];
 
   @ApiProperty({ nullable: true, example: '<error message>' })
-  error: string;
+  error?: string;
 
   data: TData;
 }
 
-export const ApiResponseMany = <TModel extends Type<any>>(model: TModel) => {
+export const ApiResponseMany = <TModel extends Type<any>>(
+  model: TModel,
+  ResponseFunction: (
+    options: ApiResponseOptions,
+  ) => MethodDecorator & ClassDecorator,
+) => {
   return applyDecorators(
-    ApiOkResponse({
+    ResponseFunction({
       schema: {
         allOf: [
           { $ref: getSchemaPath(ResponseManyDto) },
@@ -40,9 +73,14 @@ export const ApiResponseMany = <TModel extends Type<any>>(model: TModel) => {
   );
 };
 
-export const ApiResponseOne = <TModel extends Type<any>>(model: TModel) => {
+export const ApiResponseOne = <TModel extends Type<any>>(
+  model: TModel,
+  ResponseFunction: (
+    options: ApiResponseOptions,
+  ) => MethodDecorator & ClassDecorator,
+) => {
   return applyDecorators(
-    ApiOkResponse({
+    ResponseFunction({
       schema: {
         allOf: [
           { $ref: getSchemaPath(ResponseOneDto) },

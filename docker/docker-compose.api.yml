@@ -1,0 +1,34 @@
+version: "3"
+services:
+  api-salinity-prod:
+    restart: always
+    container_name: api-salinity-prod
+    image: ${RELEASE_IMAGE}
+    environment:
+      NODE_ENV: production
+      BACK_PORTAL_URL: ${BACK_PORTAL_URL}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+      COOKIE_EXP: ${COOKIE_EXP}
+      COOKIE_PATH: ${COOKIE_PATH}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE}
+      ENCRYPT_SECRET: ${ENCRYPT_SECRET}
+      FRONT_PORTAL_URL: ${FRONT_PORTAL_URL}
+      FRONT_URL: ${FRONT_URL}
+      PREDICT_URL: ${PREDICT_URL}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      APP_PORT: ${APP_PORT}
+    expose:
+      - ${APP_PORT}
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    networks:
+      - salinity-network
+
+networks:
+  salinity-network:
+    driver: bridge

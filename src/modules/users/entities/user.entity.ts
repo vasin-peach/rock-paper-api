@@ -15,7 +15,7 @@ export class User {
   @ApiProperty({ example: 'b828ef62-8502-4007-86be-4633bb194840' })
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   @ApiProperty({ example: '<email>' })
   email: string;
 

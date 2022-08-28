@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+
+  rock_paper_db:
+    container_name: 'rock_paper_db'
+    image: 'postgres:12'
+    ports:
+      - '5433:5432'
+    env_file:
+      - .env
+    volumes:
+      - ./.db:/var/lib/postgresql/data
+
+  # rock_paper_api:
+  #   container_name: 'rock_paper_api'
+  #   build:
+  #     context: .
+  #   ports:
+  #     - '3000:3000'
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - rocker_paper_db
