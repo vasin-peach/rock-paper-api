@@ -1,10 +1,5 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  MetaDto,
-  ResponseManyDto,
-  ResponseOneDto,
-} from 'src/shared/response.dto';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,8 +12,19 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto): ResponseOneDto<User> {
-    const data = this.usersRepository.create(createUserDto);
+  /* --------------------------------- Create --------------------------------- */
+  async create(createUserDto: CreateUserDto) {
+    await this.usersRepository
+      .findOne({
+        where: { name: createUserDto.name },
+      })
+      .then((exist) => {
+        if (exist) throw new BadRequestException('CREATE_USER_DUPLICATE');
+      });
+
+    const user = this.usersRepository.create(createUserDto);
+    const data = await this.usersRepository.save(user);
+
     return {
       statusCode: HttpStatus.CREATED,
       message: ['CREATE_USER_SUCCESS'],
@@ -26,53 +32,19 @@ export class UsersService {
     };
   }
 
-  async findAll(meta?: MetaDto): Promise<ResponseManyDto<User>> {
-    if (!meta)
-      return {
-        statusCode: HttpStatus.OK,
-        message: ['GET USERS SUCCESS'],
-        data: await this.usersRepository.find(),
-      };
-
-    const queryBuilder = this.usersRepository.createQueryBuilder('user');
-    queryBuilder.skip(meta.page * meta.offset).take(meta.offset); // build pagination builder
-
-    const [data, total] = await Promise.all([
-      queryBuilder.getMany(),
-      queryBuilder.getCount(),
-    ]);
+  /* --------------------------------- Update --------------------------------- */
+  async update(name: string, updateUserDto: UpdateUserDto) {
+    const data = await this.usersRepository.update(
+      { name },
+      {
+        score: updateUserDto.score,
+      },
+    );
 
     return {
       statusCode: HttpStatus.OK,
-      message: ['GET_USER_SUCCESS', 'PAGINATION'],
+      message: ['UPDATE_USER_SUCCESS'],
       data,
-      meta: {
-        ...meta,
-        total,
-      },
     };
-
-    // const data = queryBuilder.
-    // const data = meta
-    //   ? await queryBuilder.skip(meta.page * meta.offset).take(meta.offset)
-    //   : await this.usersRepository.find();
-    // return {
-    //   statusCode: 200,
-    //   message: [],
-    //   error: '',
-    //   data,
-    // };
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

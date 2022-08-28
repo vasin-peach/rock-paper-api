@@ -13,7 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
         autoLoadEntities: true,
-        synchronize: process.env.NODE_ENV === 'production' ? false : true,
+        synchronize: true,
         retryAttempts: 2,
         retryDelay: 10000,
         connectTimeoutMS: 10000,
